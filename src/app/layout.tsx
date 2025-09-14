@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import "@mantine/dropzone/styles.css";
 import "@/shared/styles/themes.css";
 import type { Metadata } from "next";
 import { MantineProvider } from "@mantine/core";
