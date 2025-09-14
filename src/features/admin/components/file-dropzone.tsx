@@ -1,12 +1,21 @@
+"use client";
 import { Group, Text } from "@mantine/core";
 import { IconUpload, IconPhoto, IconX } from "@tabler/icons-react";
-import { Dropzone, DropzoneProps, IMAGE_MIME_TYPE } from "@mantine/dropzone";
+import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
+import DropzoneFileProps from "@/shared/types/common/dropzone-types";
 
-const DropzoneFile = (props: Partial<DropzoneProps>) => {
+const DropzoneFile = ({ onFileSelect, ...props }: DropzoneFileProps) => {
   return (
     <Dropzone
-      onDrop={(files) => console.log("accepted files", files)}
-      onReject={(files) => console.log("rejected files", files)}
+      onDrop={(files) => {
+        onFileSelect?.(files[0] ?? null);
+        props.onDrop?.(files);
+        console.log("Files", files[0]);
+      }}
+      onReject={(files) => {
+        console.log("rejected files", files);
+        props.onReject?.(files);
+      }}
       maxSize={5 * 1024 ** 2}
       accept={IMAGE_MIME_TYPE}
       {...props}
@@ -44,4 +53,5 @@ const DropzoneFile = (props: Partial<DropzoneProps>) => {
     </Dropzone>
   );
 };
+
 export default DropzoneFile;
