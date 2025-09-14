@@ -4,7 +4,7 @@ import Image from "next/image";
 import companyLogo from "@/assets/logo-color.png";
 import { IconFileUpload, IconHome, IconList, IconX } from "@tabler/icons-react";
 import SidebarProps from "@/shared/types/sidebar-types";
-
+import { redirect } from "next/navigation";
 const SidebarMenu = ({ isOpen, close }: SidebarProps) => {
   if (!isOpen) {
     return null;
@@ -23,7 +23,10 @@ const SidebarMenu = ({ isOpen, close }: SidebarProps) => {
         </Button>
       </Group>
       <Stack className="p-3 h-full my-20">
-        <Button className="bg-transparent hover:bg-transparent">
+        <Button
+          onClick={() => redirect("/admin/dashboard")}
+          className="bg-transparent hover:bg-transparent"
+        >
           <Group className="w-xs">
             <IconHome className="text-gray-500" />
             <Text className="text-gray-500">Dashboard</Text>
@@ -35,7 +38,10 @@ const SidebarMenu = ({ isOpen, close }: SidebarProps) => {
             <Text className="text-gray-500">Input Data</Text>
           </Group>
         </Button>
-        <Button className="bg-transparent hover:bg-transparent">
+        <Button
+          onClick={() => redirect("/admin/list-data")}
+          className="bg-transparent hover:bg-transparent"
+        >
           <Group className="w-xs">
             <IconList className="text-gray-500" />
             <Text className="text-gray-500">List Data</Text>

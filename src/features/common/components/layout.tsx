@@ -14,8 +14,11 @@ const LayoutPage = ({ children }: LayoutProps) => {
       <SidebarMenu isOpen={isOpen} close={close} />
       <header className={`w-full rounded-md h-[6rem] bg-white shadow-md`}>
         <Group className="w-full h-full py-2 px-5 justify-between" gap={5}>
-          <Button onClick={() => open()}>
-            <IconList />
+          <Button
+            className="bg-transparent hover:bg-purple-600"
+            onClick={() => open()}
+          >
+            <IconList className="text-gray-500 hover:text-white" />
           </Button>
           <Image src={companyLogo} className="w-20 h-11" alt="company-logo" />
         </Group>
