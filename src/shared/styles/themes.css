@@ -1,0 +1,15 @@
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@theme {
+  --font-display: "Inter", "sans-serif";
+
+  --color-primary-100: #22c55d;
+
+  --color-secondary-100: #fbbf24;
+
+  --color-tertiary-100: #fef3c7;
+}
