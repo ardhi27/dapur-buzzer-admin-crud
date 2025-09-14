@@ -2,7 +2,7 @@
 import { Button, Group, Stack, Text } from "@mantine/core";
 import Image from "next/image";
 import companyLogo from "@/assets/logo-color.png";
-import LayoutProps from "@/shared/types/layout-types";
+import LayoutProps from "@/shared/types/common/layout-types";
 import { IconList } from "@tabler/icons-react";
 import useSidebarMenu from "../hooks/use-sidebar-menu";
 import SidebarMenu from "./sidebar";
