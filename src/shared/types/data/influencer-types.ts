@@ -1,37 +1,29 @@
-import Roles from "@/shared/const/role-enum";
 import * as z from "zod";
 
 /**
- * Influencer schema for validating user data.
+ * Schema for Validation User's Data.
  */
-const InfluencerSchema = z.object({
-  id: z.int(),
+export const InfluencerRegisterSchema = z.object({
+  userName: z
+    .string()
+    .min(3, "Username minimal 3 karakter")
+    .max(50, "Username maksimal 50 karakter"),
   fullName: z
-    .string("Harap masukkan username")
-    .min(1, "Username tidak boleh kosong"),
-  userName: z.string(),
-  role: z.enum([Roles.ADMIN, Roles.USER], "peran tidak valid"),
-  photo: z.string("Silahkan input foto").min(1, "Foto tidak boleh kosong"),
+    .string()
+    .min(3, "Fullname minimal 3 karakter")
+    .max(100, "Fullname maksimal 100 karakter"),
+  followers: z.number().nonnegative("Followers tidak boleh negatif"),
+  role: z.enum(["USER", "ADMIN"]).default("USER"),
+  picture: z
+    .any()
+    .optional()
+    .refine(
+      (file) =>
+        !file ||
+        (file instanceof File &&
+          ["image/jpeg", "image/png", "image/jpg"].includes(file.type)),
+      "File harus berupa gambar (jpg/png)"
+    ),
 });
 
-/**
- * Type definition of influencer data
- */
-type InfluencerData = z.infer<typeof InfluencerSchema>;
-
-/**
- * Schema for input influencer data.
- */
-const InfluencerRegisterSchema = InfluencerSchema.pick({
-  fullName: true,
-  userName: true,
-  photo: true,
-});
-
-/**
- * Type definition of data credentials.
- */
-type InfluencerRegisterData = z.infer<typeof InfluencerRegisterSchema>;
-
-export { InfluencerSchema, InfluencerRegisterSchema };
-export type { InfluencerData, InfluencerRegisterData };
+export type InfluencerRegisterData = z.infer<typeof InfluencerRegisterSchema>;
