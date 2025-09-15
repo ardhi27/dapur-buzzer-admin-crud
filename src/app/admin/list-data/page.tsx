@@ -1,7 +1,7 @@
 "use client";
 import TableData from "@/features/admin/components/table-list";
 import LayoutPage from "@/features/common/components/layout";
-import { Stack, Text } from "@mantine/core";
+import { Group, Stack, Text } from "@mantine/core";
 
 const ListData = () => {
   return (
