@@ -3,18 +3,15 @@ import { Group, Text } from "@mantine/core";
 import { IconUpload, IconPhoto, IconX } from "@tabler/icons-react";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import DropzoneFileProps from "@/shared/types/common/dropzone-types";
-import { useState } from "react";
 
-const DropzoneFile = ({ onFileSelect, ...props }: DropzoneFileProps) => {
-  const [file, setIsFile] = useState<File | null>(null);
-
+const DropzoneFile = ({ value, onFileSelect, ...props }: DropzoneFileProps) => {
+  const file = value ?? null;
   return (
     <Dropzone
       onDrop={(files) => {
         const selected = files[0] ?? null;
         onFileSelect?.(selected);
         props.onDrop?.(files);
-        setIsFile(selected);
         console.log("Files", selected);
       }}
       onReject={(files) => {
