@@ -1,16 +1,35 @@
 "use client";
 import { Button, Stack, Input, Text } from "@mantine/core";
-import { InfluencerRegisterData } from "@/shared/types/data/influencer-types";
+import {
+  ApiResponse,
+  InfluencerRegisterData,
+} from "@/shared/types/data/influencer-types";
 import { Controller, useForm } from "react-hook-form";
 import http from "@/shared/libs/http";
 import { ErrorText } from "./error-text";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import DropzoneFile from "@/features/admin/components/file-dropzone";
+import { useMutation } from "@tanstack/react-query";
+import query from "@/shared/libs/query-client";
 
 const InputData = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const createUserMutation = useMutation({
+    mutationFn: async (
+      data: FormData
+    ): Promise<ApiResponse<InfluencerRegisterData>> => {
+      const res = await http.post("/api/influencer/", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data.data;
+    },
+    onSuccess: () => {
+      query.invalidateQueries({ queryKey: ["influencers"] });
+    },
+  });
 
   const {
     register,
@@ -36,16 +55,14 @@ const InputData = () => {
       formData.append("followers", data.followers.toString());
       if (data.picture) formData.append("picture", data.picture);
 
-      const res = await http.post("/api/influencer", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await createUserMutation.mutateAsync(formData);
 
-      if (res.data.error) {
+      if (res.error) {
         setSuccessMessage(null);
 
-        if (Array.isArray(res.data.error)) {
+        if (Array.isArray(res.error)) {
           // Map error Zod ke masing-masing field react-hook-form.
-          res.data.error.forEach((issue: any) => {
+          res.error.forEach((issue: any) => {
             const field = issue.path[0];
             setError(field as keyof InfluencerRegisterData, {
               type: "manual",
@@ -53,7 +70,7 @@ const InputData = () => {
             });
           });
         } else {
-          setErrorMessage(res.data.error);
+          setErrorMessage(res.error);
         }
         return;
       }
