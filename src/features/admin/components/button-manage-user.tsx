@@ -2,7 +2,11 @@
 import ButtonDetailProps from "@/shared/types/common/button-detail-types";
 import { Button } from "@mantine/core";
 
-const ButtonDetailUser = ({
+/**
+ *
+ * Button for (Detail And Update) Navigation
+ */
+const ButtonManageUser = ({
   userId,
   onClick,
   color,
@@ -20,4 +24,4 @@ const ButtonDetailUser = ({
   );
 };
 
-export { ButtonDetailUser };
+export default ButtonManageUser;

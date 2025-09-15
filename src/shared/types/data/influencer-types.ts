@@ -39,3 +39,20 @@ export const InfluencerInformationSchema = InfluencerRegisterSchema.omit({
  * Type for User's Data Information
  */
 export type InfluencerInformation = z.infer<typeof InfluencerInformationSchema>;
+
+/**
+ * Schema for Update User'S Data
+ */
+export const InfluencerUpdateSchema = InfluencerRegisterSchema.pick({
+  fullName: true,
+  userName: true,
+  followers: true,
+  picture: true,
+});
+
+/**
+ * Type for Updated User's Data Information.
+ */
+export type UpdatedInfluencerInformation = z.infer<
+  typeof InfluencerUpdateSchema
+>;

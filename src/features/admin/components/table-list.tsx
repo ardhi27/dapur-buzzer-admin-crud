@@ -5,13 +5,15 @@ import http from "@/shared/libs/http";
 import { useQuery } from "@tanstack/react-query";
 import dateFormatter from "@/shared/utils/date-formatter";
 import { useState } from "react";
-import { ButtonDetailUser } from "./button-detail-user";
+import ButtonManageUser from "./button-manage-user";
 import ModalDetailUser from "./modal-detail-user";
 import ButtonDeleteUser from "./button-delete-user";
+import ModalUpdateUser from "./modal-update-user";
 
 const TableData = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
 
   const getData = async (): Promise<InfluencerInformation[]> => {
     const res = await http.get("/api/influencer");
@@ -28,13 +30,18 @@ const TableData = () => {
     queryFn: getData,
   });
 
-  const getId = (id: string) => {
+  const openDetailModal = (id: string) => {
     setSelectedUserId(id);
-    setModalOpen(true);
+    setDetailModalOpen(true);
   };
 
+  const openUpdateModal = (id: string) => {
+    setSelectedUserId(id);
+    setUpdateModalOpen(true);
+  };
   const handleCloseModal = () => {
-    setModalOpen(false);
+    setDetailModalOpen(false);
+    setUpdateModalOpen(false);
     setSelectedUserId(null);
   };
 
@@ -70,14 +77,17 @@ const TableData = () => {
       <Table.Td className="text-black">{dateFormatter(row.createdAt)}</Table.Td>
       <Table.Td>
         <Group className="w-full justify-center">
-          <Button color="blue" size="xs" variant="outline">
-            Edit
-          </Button>
+          <ButtonManageUser
+            label="Update"
+            userId={String(row.id)}
+            onClick={openUpdateModal}
+            color="blue"
+          />
           <ButtonDeleteUser userId={String(row.id)} />
-          <ButtonDetailUser
+          <ButtonManageUser
             label="Detail"
             userId={String(row.id)}
-            onClick={getId}
+            onClick={openDetailModal}
             color="purple"
           />
         </Group>
@@ -105,7 +115,15 @@ const TableData = () => {
 
       {selectedUserId && (
         <ModalDetailUser
-          opened={modalOpen}
+          opened={detailModalOpen}
+          onClose={handleCloseModal}
+          id={selectedUserId}
+        />
+      )}
+
+      {selectedUserId && (
+        <ModalUpdateUser
+          opened={updateModalOpen}
           onClose={handleCloseModal}
           id={selectedUserId}
         />

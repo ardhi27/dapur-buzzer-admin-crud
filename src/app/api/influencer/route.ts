@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: insertedData });
-  } catch (err: unknown) {
+  } catch (err) {
     //Validation Error
     if (err instanceof ZodError) {
       return NextResponse.json({ error: err.issues }, { status: 400 });
