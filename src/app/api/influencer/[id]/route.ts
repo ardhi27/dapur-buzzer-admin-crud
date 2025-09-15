@@ -97,26 +97,6 @@ export async function PUT(
       role: "USER",
       picture: formData.get("picture"),
     };
-    const { error: existError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (existError) {
-      return NextResponse.json({ error: "User not found!" }, { status: 404 });
-    }
-
-    //Validate user type
-    await InfluencerRegisterSchema.parseAsync(data);
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select()
-      .eq("id", id)
-      .single();
-    if (userError) {
-      return NextResponse.json({ message: "User not found!", status: 500 });
-    }
     let pictureUrl: string | null = null;
 
     //Upload image to storage supabase
@@ -155,12 +135,23 @@ export async function PUT(
       .eq("id", id);
 
     if (updateError) {
-      return NextResponse.json({ message: updateError }, { status: 500 });
+      if (
+        updateError.message.includes("duplicate key value") ||
+        updateError.code === "23505"
+      ) {
+        return NextResponse.json(
+          { error: "Username already exists" },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { success: false, error: updateError.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, data: updatedData });
   } catch (err) {
-    //Validation Error
     if (err instanceof ZodError) {
       return NextResponse.json({ error: err.issues }, { status: 400 });
     }
