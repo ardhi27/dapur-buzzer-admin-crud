@@ -1,5 +1,5 @@
 "use client";
-import InputData from "@/features/admin/components/input-data";
+import InputData from "@/features/admin/components/form-input-data";
 import LayoutPage from "@/features/common/components/layout";
 import { Stack } from "@mantine/core";
 

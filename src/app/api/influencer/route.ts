@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/shared/libs/supabase-client";
 import { InfluencerRegisterSchema } from "@/shared/types/data/influencer-types";
 import axios from "axios";
-import { success } from "zod";
+import { ZodError } from "zod";
 
 /**
  *
  * App router for POST user's data.
  *
  */
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -21,23 +22,12 @@ export async function POST(req: NextRequest) {
       picture: formData.get("picture"),
     };
 
-    const { data: existingUser, error } = await supabase
-      .from("users")
-      .select()
-      .eq("username", data.userName)
-      .single();
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 400 }
-      );
-    }
-
+    //Validate user type
     await InfluencerRegisterSchema.parseAsync(data);
 
     let pictureUrl: string | null = null;
 
+    //Upload image to storage supabase
     if (data.picture && data.picture instanceof File) {
       const fileName = `${Date.now()}_${data.picture.name}`;
       const { error: uploadError } = await supabase.storage
@@ -51,6 +41,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      //Get url image from storage
       const { data: urlData } = supabase.storage
         .from("pictures")
         .getPublicUrl(fileName);
@@ -72,6 +63,16 @@ export async function POST(req: NextRequest) {
       .select();
 
     if (insertError) {
+      //Include error for duplicate value from key value
+      if (
+        insertError.message.includes("duplicate key value") ||
+        insertError.code === "23505"
+      ) {
+        return NextResponse.json(
+          { error: "Username already exists" },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
         { success: false, error: insertError.message },
         { status: 500 }
@@ -79,13 +80,17 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: insertedData });
-  } catch (err) {
-    if (axios.isAxiosError(err)) {
-      console.error("Axios error:", err.response?.data);
-    } else {
-      console.error("Unknown error:", err);
+  } catch (err: unknown) {
+    //Validation Error
+    if (err instanceof ZodError) {
+      return NextResponse.json({ error: err.issues }, { status: 400 });
     }
-    return NextResponse.json({ message: "Something went wrong", status: 500 });
+    let message = "Something went wrong";
+    if (err instanceof Error) {
+      message = err.message;
+    }
+    console.error("Error: ", message);
+    return NextResponse.json({ error: message, status: 500 });
   }
 }
 
