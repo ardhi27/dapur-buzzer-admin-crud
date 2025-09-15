@@ -1,3 +1,4 @@
+"use client";
 import TableData from "@/features/admin/components/table-list";
 import LayoutPage from "@/features/common/components/layout";
 import { Stack, Text } from "@mantine/core";

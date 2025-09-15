@@ -3,8 +3,8 @@ import { Button, Group, Stack, Text } from "@mantine/core";
 import Image from "next/image";
 import companyLogo from "@/assets/logo-color.png";
 import { IconFileUpload, IconHome, IconList, IconX } from "@tabler/icons-react";
-import SidebarProps from "@/shared/types/common/sidebar-types";
 import { redirect } from "next/navigation";
+import SidebarProps from "@/shared/types/common/sidebar-types";
 const SidebarMenu = ({ isOpen, close }: SidebarProps) => {
   if (!isOpen) {
     return null;

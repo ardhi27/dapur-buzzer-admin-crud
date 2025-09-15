@@ -1,35 +1,34 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Anchor, Group, Table, Button, Text } from "@mantine/core";
-import axios from "axios";
 import { InfluencerInformation } from "@/shared/types/data/influencer-types";
+import http from "@/shared/libs/http";
+import { useQuery } from "@tanstack/react-query";
 
 const TableData = () => {
-  const [data, setData] = useState<InfluencerInformation[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const getData = async (): Promise<InfluencerInformation[]> => {
+    const res = await http.get("/api/influencer");
+    return res.data.data;
+  };
+  const {
+    data: userData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<InfluencerInformation[]>({
+    queryKey: ["influencers"],
+    queryFn: getData,
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get("/api/influencer");
-        setData(res.data.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch data");
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (isLoading) return <Text>Loading...</Text>;
+  if (isError)
+    return (
+      <Text c="red">
+        {error instanceof Error ? error.message : "Something went wrong!"}
+      </Text>
+    );
 
-    fetchData();
-  }, [data]);
-
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text c="red">{error}</Text>;
-
-  const rows = data.map((row) => (
-    <Table.Tr key={row.userName}>
+  const rows = userData?.map((row) => (
+    <Table.Tr key={row.id}>
       <Table.Td>
         <Anchor component="button" fz="sm">
           {row.fullName}
