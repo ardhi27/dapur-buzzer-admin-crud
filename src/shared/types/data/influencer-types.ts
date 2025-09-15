@@ -56,3 +56,11 @@ export const InfluencerUpdateSchema = InfluencerRegisterSchema.pick({
 export type UpdatedInfluencerInformation = z.infer<
   typeof InfluencerUpdateSchema
 >;
+
+/**
+ * Type for API Response.
+ */
+export type ApiResponse<T> = {
+  data: T | null;
+  error: string | any[] | null;
+};

@@ -2,20 +2,26 @@
 import http from "@/shared/libs/http";
 import query from "@/shared/libs/query-client";
 import UserModalProps from "@/shared/types/common/modal-detail-user-types";
-import { UpdatedInfluencerInformation } from "@/shared/types/data/influencer-types";
+import {
+  ApiResponse,
+  UpdatedInfluencerInformation,
+} from "@/shared/types/data/influencer-types";
 import { Button, Input, Modal, Stack, Text } from "@mantine/core";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { ErrorText } from "./error-text";
 import DropzoneFile from "./file-dropzone";
 import { useState } from "react";
+import { AxiosError } from "axios";
 
 const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
   const updateUserMutation = useMutation({
     mutationFn: async (
       data: FormData
-    ): Promise<UpdatedInfluencerInformation> => {
-      const res = await http.put(`/api/influencer/${id}`, data);
+    ): Promise<ApiResponse<UpdatedInfluencerInformation>> => {
+      const res = await http.put(`/api/influencer/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return res.data.data;
     },
     onSuccess: () => {
@@ -48,9 +54,49 @@ const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
       formData.append("fullName", data.fullName);
       formData.append("followers", data.followers.toString());
       if (data.picture) formData.append("picture", data.picture);
-      updateUserMutation.mutate(formData);
-    } catch (error) {
-      console.error(error);
+      const res = await updateUserMutation.mutateAsync(formData);
+
+      if (res.error) {
+        setSuccessMessage(null);
+
+        if (Array.isArray(res.error)) {
+          res.error.forEach((issue: any) => {
+            const field = issue.path[0];
+            setError(field as keyof UpdatedInfluencerInformation, {
+              type: "manual",
+              message: issue.message,
+            });
+          });
+        } else {
+          setErrorMessage(res.error);
+        }
+
+        return;
+      }
+
+      // Success.
+      setSuccessMessage("Success update data");
+      setErrorMessage(null);
+
+      reset({
+        userName: "",
+        fullName: "",
+        followers: 0,
+        picture: null,
+      });
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ error?: string | any[] }>;
+      if (Array.isArray(axiosErr.response?.data.error)) {
+        const messages = axiosErr.response.data.error
+          .map((issue: any) => issue.message)
+          .join(", ");
+        setErrorMessage(messages);
+      } else {
+        setErrorMessage(
+          axiosErr.response?.data.error ?? "Unexpected error occurred"
+        );
+      }
+      setSuccessMessage(null);
     }
   };
 
