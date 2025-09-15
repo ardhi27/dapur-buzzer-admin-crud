@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
           followers: data.followers,
           role: data.role,
           picture: pictureUrl,
+          createdAt: new Date().toISOString(),
         },
       ])
       .select();
