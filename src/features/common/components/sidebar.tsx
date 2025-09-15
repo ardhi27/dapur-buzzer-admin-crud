@@ -41,15 +41,6 @@ const SidebarMenu = ({ isOpen, close }: SidebarProps) => {
             <Text className="text-gray-500">Input Data</Text>
           </Group>
         </Button>
-        <Button
-          onClick={() => redirect("/admin/list-data")}
-          className="bg-transparent hover:bg-transparent"
-        >
-          <Group className="w-xs">
-            <IconList className="text-gray-500" />
-            <Text className="text-gray-500">List Data</Text>
-          </Group>
-        </Button>
       </Stack>
     </Stack>
   );
