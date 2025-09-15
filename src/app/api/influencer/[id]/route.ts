@@ -1,6 +1,12 @@
 import supabase from "@/shared/libs/supabase-client";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ *
+ * App router to DELETE user's data.
+ *
+ */
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -27,7 +33,12 @@ export async function DELETE(
       message: "Data deleted successfully!",
       data: userData,
     });
-  } catch (error) {
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.error("Axios error:", err.response?.data);
+    } else {
+      console.error("Unknown error:", err);
+    }
     return NextResponse.json({ message: "Something went wrong", status: 500 });
   }
 }

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/shared/libs/supabase-client";
 import { InfluencerRegisterSchema } from "@/shared/types/data/influencer-types";
+import axios from "axios";
+import { success } from "zod";
 
+/**
+ *
+ * App router for POST user's data.
+ *
+ */
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -13,6 +20,19 @@ export async function POST(req: NextRequest) {
       role: "USER",
       picture: formData.get("picture"),
     };
+
+    const { data: existingUser, error } = await supabase
+      .from("users")
+      .select()
+      .eq("username", data.userName)
+      .single();
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Username already exists" },
+        { status: 400 }
+      );
+    }
 
     await InfluencerRegisterSchema.parseAsync(data);
 
@@ -59,14 +79,21 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: insertedData });
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 400 }
-    );
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.error("Axios error:", err.response?.data);
+    } else {
+      console.error("Unknown error:", err);
+    }
+    return NextResponse.json({ message: "Something went wrong", status: 500 });
   }
 }
 
+/**
+ *
+ * App router for GET user's data.
+ *
+ */
 export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabase.from("users").select();
@@ -74,7 +101,12 @@ export async function GET(req: NextRequest) {
       console.log("Ada Data: ", data);
     }
     return NextResponse.json({ data: data, success: true });
-  } catch (err: any) {
-    console.log(err);
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.error("Axios error:", err.response?.data);
+    } else {
+      console.error("Unknown error:", err);
+    }
+    return NextResponse.json({ message: "Something went wrong", status: 500 });
   }
 }
