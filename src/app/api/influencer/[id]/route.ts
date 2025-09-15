@@ -11,7 +11,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
@@ -54,7 +54,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
