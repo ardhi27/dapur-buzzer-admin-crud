@@ -1,10 +1,5 @@
 import supabase from "@/shared/libs/supabase-client";
-import {
-  InfluencerRegisterData,
-  InfluencerRegisterSchema,
-  UpdateUserPayload,
-  UpdatedInfluencerInformation,
-} from "@/shared/types/data/influencer-types";
+import { UpdateUserPayload } from "@/shared/types/data/influencer-types";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -18,7 +13,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
@@ -61,7 +56,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const { data: userData, error: userError } = await supabase
       .from("users")
