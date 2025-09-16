@@ -1,5 +1,10 @@
 import supabase from "@/shared/libs/supabase-client";
-import { InfluencerRegisterSchema } from "@/shared/types/data/influencer-types";
+import {
+  InfluencerRegisterData,
+  InfluencerRegisterSchema,
+  UpdateUserPayload,
+  UpdatedInfluencerInformation,
+} from "@/shared/types/data/influencer-types";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -83,28 +88,36 @@ export async function GET(
  * App router to PUT data's user by id.
  *
  */
-export async function PUT(
+export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
+
   try {
     const formData = await req.formData();
-    const data = {
-      userName: formData.get("userName")?.toString() ?? "",
-      fullName: formData.get("fullName")?.toString() ?? "",
-      followers: Number(formData.get("followers") ?? 0),
-      role: "USER",
-      picture: formData.get("picture"),
-    };
-    let pictureUrl: string | null = null;
 
-    //Upload image to storage supabase
-    if (data.picture && data.picture instanceof File) {
-      const fileName = `${Date.now()}_${data.picture.name}`;
+    let pictureUrl: string | null = null;
+    const updateData: UpdateUserPayload = {};
+
+    // Taking optional field.
+    const userName = formData.get("userName")?.toString();
+    const fullName = formData.get("fullName")?.toString();
+    const followers = formData.get("followers");
+    const role = formData.get("role")?.toString();
+    const picture = formData.get("picture");
+
+    if (userName) updateData.userName = userName;
+    if (fullName) updateData.fullName = fullName;
+    if (followers) updateData.followers = Number(followers);
+    if (role) updateData.role = role;
+
+    // Upload image to supabase' storage.
+    if (picture && picture instanceof File) {
+      const fileName = `${Date.now()}_${picture.name}`;
       const { error: uploadError } = await supabase.storage
         .from("pictures")
-        .upload(fileName, data.picture);
+        .upload(fileName, picture);
 
       if (uploadError) {
         return NextResponse.json(
@@ -113,37 +126,28 @@ export async function PUT(
         );
       }
 
-      //Get url image from storage
       const { data: urlData } = supabase.storage
         .from("pictures")
         .getPublicUrl(fileName);
 
       pictureUrl = urlData.publicUrl;
+      updateData.picture = pictureUrl;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No fields to update" },
+        { status: 400 }
+      );
     }
 
     const { data: updatedData, error: updateError } = await supabase
       .from("users")
-      .update([
-        {
-          userName: data.userName,
-          fullName: data.fullName,
-          followers: data.followers,
-          role: data.role,
-          picture: pictureUrl,
-        },
-      ])
-      .eq("id", id);
+      .update(updateData)
+      .eq("id", id)
+      .select();
 
     if (updateError) {
-      if (
-        updateError.message.includes("duplicate key value") ||
-        updateError.code === "23505"
-      ) {
-        return NextResponse.json(
-          { error: "Username already exists" },
-          { status: 400 }
-        );
-      }
       return NextResponse.json(
         { success: false, error: updateError.message },
         { status: 500 }
@@ -155,10 +159,10 @@ export async function PUT(
     if (err instanceof ZodError) {
       return NextResponse.json({ error: err.issues }, { status: 400 });
     }
+
     let message = "Something went wrong";
-    if (err instanceof Error) {
-      message = err.message;
-    }
+    if (err instanceof Error) message = err.message;
+
     console.error("Error: ", message);
     return NextResponse.json({ error: message, status: 500 });
   }
