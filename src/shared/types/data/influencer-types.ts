@@ -64,3 +64,14 @@ export type ApiResponse<T> = {
   data: T | null;
   error: string | any[] | null;
 };
+
+/**
+ * Payload to update user.
+ */
+export type UpdateUserPayload = {
+  userName?: string;
+  fullName?: string;
+  followers?: number;
+  role?: string;
+  picture?: string;
+};
