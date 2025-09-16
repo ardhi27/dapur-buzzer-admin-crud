@@ -58,11 +58,20 @@ export type UpdatedInfluencerInformation = z.infer<
 >;
 
 /**
+ * Validation Error Type
+ */
+export type ValidationIssue = {
+  path: (string | number)[];
+  message: string;
+};
+export type ApiError = string | ValidationIssue[];
+
+/**
  * Type for API Response.
  */
 export type ApiResponse<T> = {
   data: T | null;
-  error: string | any[] | null;
+  error: ApiError | null;
 };
 
 /**
