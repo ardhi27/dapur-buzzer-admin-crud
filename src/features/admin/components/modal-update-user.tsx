@@ -12,6 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import { ErrorText } from "./error-text";
 import DropzoneFile from "./file-dropzone";
 import { useState } from "react";
+import { ZodIssue } from "zod/v3";
 import { AxiosError } from "axios";
 
 const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
@@ -19,7 +20,7 @@ const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
     mutationFn: async (
       data: FormData
     ): Promise<ApiResponse<UpdatedInfluencerInformation>> => {
-      const res = await http.put(`/api/influencer/${id}`, data, {
+      const res = await http.patch(`/api/influencer/${id}`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       return res.data.data;
@@ -50,30 +51,31 @@ const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
   const onSubmit = async (data: UpdatedInfluencerInformation) => {
     try {
       const formData = new FormData();
-      formData.append("userName", data.userName);
-      formData.append("fullName", data.fullName);
-      formData.append("followers", data.followers.toString());
+
+      if (data.userName) formData.append("userName", data.userName);
+      if (data.fullName) formData.append("fullName", data.fullName);
+      if (data.followers !== undefined && data.followers !== null) {
+        formData.append("followers", data.followers.toString());
+      }
       if (data.picture) formData.append("picture", data.picture);
       const res = await updateUserMutation.mutateAsync(formData);
 
-      if (res.error) {
-        setSuccessMessage(null);
-
-        if (Array.isArray(res.error)) {
-          res.error.forEach((issue: any) => {
-            const field = issue.path[0];
-            setError(field as keyof UpdatedInfluencerInformation, {
-              type: "manual",
-              message: issue.message,
-            });
+      if (Array.isArray(res.error)) {
+        //Validation Error(Zod)
+        (res.error as ZodIssue[]).forEach((issue) => {
+          const field = issue.path[0];
+          setError(field as keyof UpdatedInfluencerInformation, {
+            type: "manual",
+            message: issue.message,
           });
-        } else {
-          setErrorMessage(res.error);
-        }
-
+        });
         return;
       }
 
+      //General Error
+      if (res.error) {
+        setErrorMessage(res.error);
+      }
       // Success.
       setSuccessMessage("Success update data");
       setErrorMessage(null);
@@ -85,10 +87,11 @@ const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
         picture: null,
       });
     } catch (err) {
-      const axiosErr = err as AxiosError<{ error?: string | any[] }>;
+      const axiosErr = err as AxiosError<{ error?: string | ZodIssue[] }>;
+
       if (Array.isArray(axiosErr.response?.data.error)) {
-        const messages = axiosErr.response.data.error
-          .map((issue: any) => issue.message)
+        const messages = (axiosErr.response?.data.error as ZodIssue[])
+          .map((issue) => issue.message)
           .join(", ");
         setErrorMessage(messages);
       } else {
@@ -96,7 +99,9 @@ const ModalUpdateUser = ({ id, opened, onClose }: UserModalProps) => {
           axiosErr.response?.data.error ?? "Unexpected error occurred"
         );
       }
+
       setSuccessMessage(null);
+      console.error(err);
     }
   };
 
