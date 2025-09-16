@@ -12,6 +12,7 @@ import { AxiosError } from "axios";
 import DropzoneFile from "@/features/admin/components/file-dropzone";
 import { useMutation } from "@tanstack/react-query";
 import query from "@/shared/libs/query-client";
+import { ZodIssue } from "zod/v3";
 
 const InputData = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -57,22 +58,21 @@ const InputData = () => {
 
       const res = await createUserMutation.mutateAsync(formData);
 
-      if (res.error) {
-        setSuccessMessage(null);
-
-        if (Array.isArray(res.error)) {
-          // Map error Zod ke masing-masing field react-hook-form.
-          res.error.forEach((issue: any) => {
-            const field = issue.path[0];
-            setError(field as keyof InfluencerRegisterData, {
-              type: "manual",
-              message: issue.message,
-            });
+      if (Array.isArray(res.error)) {
+        //Validation Error(Zod)
+        (res.error as ZodIssue[]).forEach((issue) => {
+          const field = issue.path[0];
+          setError(field as keyof InfluencerRegisterData, {
+            type: "manual",
+            message: issue.message,
           });
-        } else {
-          setErrorMessage(res.error);
-        }
+        });
         return;
+      }
+
+      //General Error
+      if (res.error) {
+        setErrorMessage(res.error);
       }
 
       // Success.
@@ -87,10 +87,11 @@ const InputData = () => {
         picture: null,
       });
     } catch (err) {
-      const axiosErr = err as AxiosError<{ error?: string | any[] }>;
+      const axiosErr = err as AxiosError<{ error?: string | ZodIssue[] }>;
+
       if (Array.isArray(axiosErr.response?.data.error)) {
-        const messages = axiosErr.response.data.error
-          .map((issue: any) => issue.message)
+        const messages = (axiosErr.response?.data.error as ZodIssue[])
+          .map((issue) => issue.message)
           .join(", ");
         setErrorMessage(messages);
       } else {
@@ -98,7 +99,9 @@ const InputData = () => {
           axiosErr.response?.data.error ?? "Unexpected error occurred"
         );
       }
+
       setSuccessMessage(null);
+      console.error(err);
     }
   };
 
