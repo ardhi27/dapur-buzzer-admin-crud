@@ -24,8 +24,9 @@ const ButtonDeleteUser = ({ userId }: DeleteButtonUserProps) => {
       centered: true,
       children: (
         <Text size="sm">
-          Are you sure you want to delete this influencer's data? This action is
-          destructive and you will have to contact support to restore your data.
+          Are you sure you want to delete this influencer&apos;s data? This
+          action is destructive and you will have to contact support to restore
+          your data.
         </Text>
       ),
       labels: { confirm: "Delete account", cancel: "Cancel" },
